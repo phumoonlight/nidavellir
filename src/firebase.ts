@@ -1,8 +1,9 @@
 import { initializeApp, cert, ServiceAccount, } from 'firebase-admin/app'
 import { getStorage } from 'firebase-admin/storage'
+import { ENV } from './env'
 import serviceAccount from '../service-account.json'
 
-const BUCKET = 'phumo-nidavellir.appspot.com'
+const BUCKET = ENV.storageBucketName
 const FOLDER = 'uploads'
 
 initializeApp({
@@ -21,10 +22,10 @@ export const firebaseBucket = firebaseStorage.bucket()
 export const uploadFile = async (file: Express.Multer.File): Promise<string> => {
 	return new Promise<string>((resolve) => {
 		if (!file) return resolve('')
-		const generated = Date.now() + '-' + Math.round(Math.random() * 1e9)
+		const generated = `${Date.now()}-${Math.round(Math.random() * 1e9)}`
 		const splitedFileName = file.originalname.split('.')
 		const fileExtension = splitedFileName[splitedFileName.length - 1]
-		const newFileName = `test-${generated}.${fileExtension}`
+		const newFileName = `u-${generated}.${fileExtension}`
 		const dest = `${FOLDER}/${newFileName}`
 		const blob = firebaseBucket.file(dest)
 		const blobStream = blob.createWriteStream({ resumable: false })
