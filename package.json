@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "nodemon --exec npx ts-node src/main.ts",
     "build": "rimraf dist && tsc",
-    "start": "node dist/src/main.js"
+    "start": "node dist/src/main.js",
+    "deploy": "npm run build && gcloud app deploy"
   },
   "dependencies": {
     "express": "4.17.2",
