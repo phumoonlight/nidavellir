@@ -1,4 +1,6 @@
-import { initializeApp, cert, ServiceAccount, } from 'firebase-admin/app'
+import { initializeApp, cert, ServiceAccount } from 'firebase-admin/app'
+import { getFirestore } from 'firebase-admin/firestore'
+
 import { getStorage } from 'firebase-admin/storage'
 import { ENV } from './env'
 import serviceAccount from '../service-account.json'
@@ -14,6 +16,8 @@ initializeApp({
 const getUploadedUrl = (fileName: string) => {
 	return `https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o/${FOLDER}%2F${fileName}?alt=media`
 }
+
+export const firestore = getFirestore()
 
 export const firebaseStorage = getStorage()
 
