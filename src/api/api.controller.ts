@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import { bookmarkController } from './bookmark'
-import { uploadController } from './upload'
+import { bookmarkController } from './bookmark/bookmark.controller'
+import { uploadController } from './upload/upload.controller'
 
 export const apiController = Router()
 

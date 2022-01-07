@@ -1,6 +1,62 @@
 import { Request } from 'express'
-import { firestore } from '../firebase'
-import { initBookmarkModel, initBookmarkTagModel } from '../models/bookmark'
+import { MESSAGE } from '../../const'
+import { firestore } from '../../firebase'
+
+export interface BookmarkItemPayload {
+  tagId: string
+  thumbnail: string
+  title: string
+  description: string
+  ownerId: string
+  url: string
+}
+
+export interface BookmarkTagPayload {
+  ownerId: string
+  title: string
+  description: string
+}
+
+export interface BookmarkItem {
+  tag_id: string
+  owner_id: string
+  thumbnail: string
+  title: string
+  description: string
+  url: string
+}
+
+export interface BookmarkTag {
+  owner_id: string
+  title: string
+  description: string
+}
+
+const initBookmarkModel = ({
+  description = '',
+  ownerId = '',
+  tagId = '',
+  thumbnail = '',
+  title = '',
+  url = '',
+}: BookmarkItemPayload): BookmarkItem => ({
+  owner_id: ownerId,
+  tag_id: tagId,
+  description,
+  thumbnail,
+  title,
+  url
+})
+
+const initBookmarkTagModel = ({
+  ownerId = '',
+  title = '',
+  description = '',
+}: BookmarkTagPayload): BookmarkTag => ({
+  owner_id: ownerId,
+  description,
+  title,
+})
 
 const COLLECTION = {
   items: 'bookmark_items',
@@ -28,12 +84,12 @@ export const getBookmarks = async (req: Request) => {
 export const createBookmark = async (req: Request): Promise<string> => {
   try {
     const bookmark = initBookmarkModel(req.body)
-    if (!bookmark.owner_id) return 'error: required field [ownerId]'
+    if (!bookmark.owner_id) return MESSAGE.requiredOwnerId
     await firestore.collection(COLLECTION.items).add(bookmark)
-    return 'created'
+    return MESSAGE.created
   } catch (error) {
     console.error(error)
-    return 'error: failed to created'
+    return MESSAGE.createdError
   }
 }
 
@@ -58,11 +114,11 @@ export const getBookmarkTags = async (req: Request) => {
 export const createBookmarkTag = async (req: Request): Promise<string> => {
   try {
     const tag = initBookmarkTagModel(req.body)
-    if (!tag.owner_id) return 'error: required field [ownerId]'
+    if (!tag.owner_id) return MESSAGE.requiredOwnerId
     await firestore.collection(COLLECTION.tags).add(tag)
-    return 'created'
+    return MESSAGE.created
   } catch (error) {
     console.error(error)
-    return 'error: failed to created'
+    return MESSAGE.createdError
   }
 }

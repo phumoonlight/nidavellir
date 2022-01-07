@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import { apiController } from './api/api'
+import { apiController } from './api/api.controller'
 
 export const app = express()
 
