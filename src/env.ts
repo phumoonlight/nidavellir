@@ -1,6 +1,10 @@
+import dotenv from 'dotenv'
+
+dotenv.config()
+
 const {
   PORT = '4000',
-  STORAGE_BUCKET_NAME = 'nidavellir-35793.appspot.com',
+  STORAGE_BUCKET_NAME = '',
 } = process.env
 
 export const ENV = {
