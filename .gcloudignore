@@ -11,7 +11,9 @@ node_modules/
 .gcloudignore
 .git
 .gitignore
+.env.example
 LICENSE
 README.md
 tsconfig.json
 /service-account.json
+/service-account.json.example
