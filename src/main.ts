@@ -1,9 +1,10 @@
 import { app } from './app'
 import { ENV } from './env'
+import { createLogger } from './util'
 
-const LOG_PREFIX = '[server]'
+const log = createLogger('server')
 
 app.listen(ENV.port, () => {
-	console.info(LOG_PREFIX, 'app listening at port', ENV.port)
-	console.info(LOG_PREFIX, 'node version', process.version)
+	log('app listening at port', ENV.port)
+	log('node version', process.version)
 })

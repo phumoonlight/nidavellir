@@ -1,6 +1,5 @@
 import { initializeApp, cert, ServiceAccount } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
-
 import { getStorage } from 'firebase-admin/storage'
 import { ENV } from './env'
 import serviceAccount from '../service-account.json'
