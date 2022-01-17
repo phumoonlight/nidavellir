@@ -1,9 +1,8 @@
 export const MESSAGE = {
+  success: 'success',
+  internalServerError: 'internal_server_error',
   // request
   requiredOwnerId: 'error: required field [ownerId]',
-  // create
-  created: 'created',
-  createdError: 'error: failed to created',
   // upload
   uploaded: 'uploaded',
   uploadedError: 'error: failed to upload',

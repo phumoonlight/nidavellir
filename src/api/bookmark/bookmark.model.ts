@@ -32,7 +32,7 @@ export interface BookmarkTag {
   description: string
 }
 
-const initBookmarkModel = ({
+const mapBookmarkPayload = ({
   description = '',
   ownerId = '',
   tagId = '',
@@ -83,13 +83,39 @@ export const getBookmarks = async (req: Request) => {
 
 export const createBookmark = async (req: Request): Promise<string> => {
   try {
-    const bookmark = initBookmarkModel(req.body)
+    const bookmark = mapBookmarkPayload(req.body)
     if (!bookmark.owner_id) return MESSAGE.requiredOwnerId
     await firestore.collection(COLLECTION.items).add(bookmark)
-    return MESSAGE.created
+    return MESSAGE.success
   } catch (error) {
     console.error(error)
-    return MESSAGE.createdError
+    return MESSAGE.internalServerError
+  }
+}
+
+export const updateBookmark = async (req: Request): Promise<string> => {
+  try {
+    const bookmark = mapBookmarkPayload(req.body)
+    const bookmarkId = req.params.id
+    if (!bookmark.owner_id) return MESSAGE.requiredOwnerId
+    const targetDoc = firestore.collection(COLLECTION.items).doc(bookmarkId)
+    await targetDoc.update(bookmark)
+    return MESSAGE.success
+  } catch (error) {
+    console.error(error)
+    return MESSAGE.internalServerError
+  }
+}
+
+export const deleteBookmark = async (req: Request): Promise<string> => {
+  try {
+    const bookmarkId = req.params.id
+    const targetDoc = firestore.collection(COLLECTION.items).doc(bookmarkId)
+    await targetDoc.delete()
+    return MESSAGE.success
+  } catch (error) {
+    console.error(error)
+    return MESSAGE.internalServerError
   }
 }
 
@@ -116,9 +142,9 @@ export const createBookmarkTag = async (req: Request): Promise<string> => {
     const tag = initBookmarkTagModel(req.body)
     if (!tag.owner_id) return MESSAGE.requiredOwnerId
     await firestore.collection(COLLECTION.tags).add(tag)
-    return MESSAGE.created
+    return MESSAGE.success
   } catch (error) {
     console.error(error)
-    return MESSAGE.createdError
+    return MESSAGE.internalServerError
   }
 }
