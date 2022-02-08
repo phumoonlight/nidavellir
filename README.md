@@ -2,7 +2,7 @@
 
 ### Prerequisite
 
-- `service-account.json` on project root
+- `service-account.json`
 - `.env` on project root
 
 ### Development
