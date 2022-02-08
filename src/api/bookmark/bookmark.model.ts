@@ -127,9 +127,8 @@ export const deleteBookmark = async (req: Request): Promise<boolean> => {
 	}
 }
 
-export const getBookmarkTags = async (req: Request) => {
+export const getBookmarkTags = async (ownerId: string) => {
 	try {
-		const ownerId = req.query.owner || ''
 		const collectionRef = firestore.collection(COLLECTION.tags)
 		const query = collectionRef.where('owner_id', '==', ownerId)
 		const snapshot = await query.get()
@@ -145,15 +144,15 @@ export const getBookmarkTags = async (req: Request) => {
 	}
 }
 
-export const createBookmarkTag = async (req: Request): Promise<string> => {
+export const createBookmarkTag = async (ownerId: string, req: Request) => {
 	try {
 		const tag = initBookmarkTagModel(req.body)
-		if (!tag.owner_id) return MESSAGE.requiredOwnerId
-		await firestore.collection(COLLECTION.tags).add(tag)
-		return MESSAGE.success
+		tag.owner_id = ownerId
+		const created = await firestore.collection(COLLECTION.tags).add(tag)
+		return await created.get()
 	} catch (error) {
 		console.error(error)
-		return MESSAGE.internalServerError
+		return null
 	}
 }
 

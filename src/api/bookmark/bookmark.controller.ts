@@ -19,13 +19,15 @@ bookmarkController.get('/items', useFirebaseAuth, async (req, res) => {
 
 bookmarkController.post('/items', useFirebaseAuth, async (req, res) => {
 	const userId = res.locals.decodedIdToken?.uid || ''
-	const message = await createBookmark(userId, req)
-	res.json({ message })
+	const data = await createBookmark(userId, req)
+	res.json({ data })
 })
 
 bookmarkController.put('/items/:id', useFirebaseAuth, async (req, res) => {
 	const userId = res.locals.decodedIdToken?.uid || ''
-	const message = await updateBookmark(userId, req)
+	const isSuccess = await updateBookmark(userId, req)
+	const message = isSuccess ? 'success' : 'failed'
+	if (!isSuccess) res.status(500)
 	res.json({ message })
 })
 
@@ -37,11 +39,13 @@ bookmarkController.delete('/items/:id', useFirebaseAuth, async (req, res) => {
 })
 
 bookmarkController.get('/tags', useFirebaseAuth, async (req, res) => {
-	const data = await getBookmarkTags(req)
+	const userId = res.locals.decodedIdToken?.uid || ''
+	const data = await getBookmarkTags(userId)
 	res.json({ data })
 })
 
 bookmarkController.post('/tags', useFirebaseAuth, async (req, res) => {
-	const message = await createBookmarkTag(req)
-	res.json({ message })
+	const userId = res.locals.decodedIdToken?.uid || ''
+	const data = await createBookmarkTag(userId, req)
+	res.json({ data })
 })
