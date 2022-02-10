@@ -149,10 +149,10 @@ export const getBookmarkTags = async (ownerId: string) => {
 	}
 }
 
-export const createBookmarkTag = async (ownerId: string, req: Request) => {
+export const createBookmarkGroup = async ({ userId = '', reqBody = {} }) => {
 	try {
-		const bookmarkGroup = mapBookmarkGroupPayload(req.body)
-		bookmarkGroup.owner_id = ownerId
+		const bookmarkGroup = mapBookmarkGroupPayload(reqBody as any)
+		bookmarkGroup.owner_id = userId
 		const created = await firestore
 			.collection(COLLECTION.bookmarkGroups)
 			.add(bookmarkGroup)

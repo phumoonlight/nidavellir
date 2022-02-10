@@ -1,11 +1,10 @@
 import { Router } from 'express'
-import { ResponsePayload } from '../../response'
-import { useFirebaseAuth } from './bookmark.auth'
+import { getAuthorizedUserId, useFirebaseAuth } from './bookmark.auth'
 import {
 	getBookmarks,
 	createBookmark,
 	getBookmarkTags,
-	createBookmarkTag,
+	createBookmarkGroup,
 	updateBookmark,
 	deleteBookmark,
 	deleteBookmarkGroup,
@@ -15,7 +14,7 @@ export const bookmarkController = Router()
 
 bookmarkController.get('/items', useFirebaseAuth, async (req, res) => {
 	const groupId = (req.query.group as string) || ''
-	const ownerId = res.locals.decodedIdToken?.uid || ''
+	const ownerId = getAuthorizedUserId(res)
 	const data = await getBookmarks({
 		ownerId,
 		groupId,
@@ -24,13 +23,13 @@ bookmarkController.get('/items', useFirebaseAuth, async (req, res) => {
 })
 
 bookmarkController.post('/items', useFirebaseAuth, async (req, res) => {
-	const userId = res.locals.decodedIdToken?.uid || ''
+	const userId = getAuthorizedUserId(res)
 	const data = await createBookmark(userId, req)
 	res.json({ data })
 })
 
 bookmarkController.put('/items/:id', useFirebaseAuth, async (req, res) => {
-	const userId = res.locals.decodedIdToken?.uid || ''
+	const userId = getAuthorizedUserId(res)
 	const isSuccess = await updateBookmark(userId, req)
 	const message = isSuccess ? 'success' : 'failed'
 	if (!isSuccess) res.status(500)
@@ -45,20 +44,20 @@ bookmarkController.delete('/items/:id', useFirebaseAuth, async (req, res) => {
 })
 
 bookmarkController.get('/groups', useFirebaseAuth, async (req, res) => {
-	const userId = res.locals.decodedIdToken?.uid || ''
+	const userId = getAuthorizedUserId(res)
 	const data = await getBookmarkTags(userId)
 	res.json({ data })
 })
 
 bookmarkController.post('/groups', useFirebaseAuth, async (req, res) => {
-	const userId = res.locals.decodedIdToken?.uid || ''
-	const data = await createBookmarkTag(userId, req)
+	const userId = getAuthorizedUserId(res)
+	const data = await createBookmarkGroup({ reqBody: req.body, userId })
 	res.json({ data })
 })
 
 bookmarkController.delete('/groups/:id', useFirebaseAuth, async (req, res) => {
 	const groupId = req.params.id || ''
-	const userId = res.locals.decodedIdToken?.uid || ''
+	const userId = getAuthorizedUserId(res)
 	const isSuccess = await deleteBookmarkGroup({ userId, groupId })
 	if (!isSuccess) res.status(500)
 	res.json({

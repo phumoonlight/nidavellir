@@ -1,4 +1,4 @@
-import { RequestHandler } from 'express'
+import { RequestHandler, Response } from 'express'
 import { firebaseAuth } from './bookmark.firebase'
 import { ResponsePayload } from '../../response'
 
@@ -30,4 +30,8 @@ export const useFirebaseAuth: RequestHandler = async (req, res, next) => {
 	}
 	res.locals.decodedIdToken = decodedIdToken
 	next()
+}
+
+export const getAuthorizedUserId = (res: Response): string => {
+	return res.locals.decodedIdToken?.uid || ''
 }
