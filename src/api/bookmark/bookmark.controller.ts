@@ -3,7 +3,7 @@ import { getAuthorizedUserId, useFirebaseAuth } from './bookmark.auth'
 import {
 	getBookmarks,
 	createBookmark,
-	getBookmarkTags,
+	getBookmarkGroups,
 	createBookmarkGroup,
 	updateBookmark,
 	deleteBookmark,
@@ -12,31 +12,29 @@ import {
 
 export const bookmarkController = Router()
 
-bookmarkController.get('/items', useFirebaseAuth, async (req, res) => {
+bookmarkController.get('/bookmarks', useFirebaseAuth, async (req, res) => {
 	const groupId = (req.query.group as string) || ''
-	const ownerId = getAuthorizedUserId(res)
-	const data = await getBookmarks({
-		ownerId,
-		groupId,
-	})
+	const userId = getAuthorizedUserId(res)
+	const data = await getBookmarks({ userId, groupId })
 	res.json({ data })
 })
 
-bookmarkController.post('/items', useFirebaseAuth, async (req, res) => {
+bookmarkController.post('/bookmarks', useFirebaseAuth, async (req, res) => {
 	const userId = getAuthorizedUserId(res)
-	const data = await createBookmark(userId, req)
+	const data = await createBookmark(userId, req.body)
 	res.json({ data })
 })
 
-bookmarkController.put('/items/:id', useFirebaseAuth, async (req, res) => {
+bookmarkController.patch('/bookmarks/:id', useFirebaseAuth, async (req, res) => {
+	const bookmarkId = req.params.id || ''
 	const userId = getAuthorizedUserId(res)
-	const isSuccess = await updateBookmark(userId, req)
+	const isSuccess = await updateBookmark(userId, bookmarkId, req.body)
 	const message = isSuccess ? 'success' : 'failed'
 	if (!isSuccess) res.status(500)
 	res.json({ message })
 })
 
-bookmarkController.delete('/items/:id', useFirebaseAuth, async (req, res) => {
+bookmarkController.delete('/bookmarks/:id', useFirebaseAuth, async (req, res) => {
 	const isSuccess = await deleteBookmark(req)
 	const message = isSuccess ? 'success' : 'failed'
 	if (!isSuccess) res.status(500)
@@ -45,13 +43,13 @@ bookmarkController.delete('/items/:id', useFirebaseAuth, async (req, res) => {
 
 bookmarkController.get('/groups', useFirebaseAuth, async (req, res) => {
 	const userId = getAuthorizedUserId(res)
-	const data = await getBookmarkTags(userId)
+	const data = await getBookmarkGroups(userId)
 	res.json({ data })
 })
 
 bookmarkController.post('/groups', useFirebaseAuth, async (req, res) => {
 	const userId = getAuthorizedUserId(res)
-	const data = await createBookmarkGroup({ reqBody: req.body, userId })
+	const data = await createBookmarkGroup(userId, req.body)
 	res.json({ data })
 })
 
