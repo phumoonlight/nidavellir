@@ -1,7 +1,7 @@
 import { Request } from 'express'
-import { firestore } from './bookmark.firebase'
+import { useFirebase } from './vurl.firebase'
 
-export interface BookmarkDocument {
+export interface LinkDocument {
 	gid: string
 	uid: string
 	timg: string
@@ -10,7 +10,7 @@ export interface BookmarkDocument {
 	order: number
 }
 
-export interface BookmarkGroupDocument {
+export interface LinkGroupDocument {
 	uid: string
 	title: string
 	desc: string
@@ -19,18 +19,20 @@ export interface BookmarkGroupDocument {
 }
 
 const COLLECTION = {
-	bookmarks: 'bookmarks',
-	bookmarkGroups: 'bookmark_groups',
+	links: 'links',
+	linkGroup: 'link_groups',
 }
+
+const { firestore } = useFirebase()
 
 export const getBookmarks = async ({ userId = '', groupId = '' }) => {
 	try {
-		const collectionRef = firestore.collection(COLLECTION.bookmarks)
-		const query = collectionRef
+		const query = await firestore
+			.collection(COLLECTION.linkGroup)
 			.where('uid', '==', userId)
 			.where('gid', '==', groupId)
-		const snapshot = await query.get()
-		return snapshot.docs.map((doc) => ({
+			.get()
+		return query.docs.map((doc) => ({
 			id: doc.id,
 			created_at: doc.createTime.toDate(),
 			updated_at: doc.updateTime.toDate(),
@@ -42,14 +44,11 @@ export const getBookmarks = async ({ userId = '', groupId = '' }) => {
 	}
 }
 
-export const createBookmark = async (
-	userId: string,
-	payload: BookmarkDocument
-) => {
+export const createBookmark = async (userId: string, payload: LinkDocument) => {
 	try {
 		if (!userId) throw new Error('userid required')
 		if (!payload.url) throw new Error('url required')
-		const bookmark: BookmarkDocument = {
+		const bookmark: LinkDocument = {
 			uid: userId,
 			url: payload.url,
 			gid: payload.gid || '',
@@ -57,8 +56,9 @@ export const createBookmark = async (
 			title: payload.title || 'untitled',
 			order: payload.order || 0,
 		}
-		const bookmarkCollectionRef = firestore.collection(COLLECTION.bookmarks)
-		const createdDocRef = await bookmarkCollectionRef.add(bookmark)
+		const createdDocRef = await firestore
+			.collection(COLLECTION.links)
+			.add(bookmark)
 		return await createdDocRef.get()
 	} catch (error) {
 		console.error(error)
@@ -69,11 +69,11 @@ export const createBookmark = async (
 export const updateBookmark = async (
 	userId: string,
 	bookmarkId: string,
-	payload: BookmarkDocument
+	payload: LinkDocument
 ): Promise<boolean> => {
 	try {
 		if (!userId) throw new Error('userid required')
-		const bookmarkCollectionRef = firestore.collection(COLLECTION.bookmarks)
+		const bookmarkCollectionRef = firestore.collection(COLLECTION.links)
 		const bookmarkDocRef = bookmarkCollectionRef.doc(bookmarkId)
 		await bookmarkDocRef.update(payload)
 		return true
@@ -86,7 +86,7 @@ export const updateBookmark = async (
 export const deleteBookmark = async (req: Request): Promise<boolean> => {
 	try {
 		const bookmarkId = req.params.id || ''
-		const bookmarkCollRef = firestore.collection(COLLECTION.bookmarks)
+		const bookmarkCollRef = firestore.collection(COLLECTION.links)
 		const bookmarkDocRef = bookmarkCollRef.doc(bookmarkId)
 		await bookmarkDocRef.delete()
 		return true
@@ -98,7 +98,7 @@ export const deleteBookmark = async (req: Request): Promise<boolean> => {
 
 export const getBookmarkGroups = async (userId: string) => {
 	try {
-		const groupCollRef = firestore.collection(COLLECTION.bookmarkGroups)
+		const groupCollRef = firestore.collection(COLLECTION.linkGroup)
 		const query = groupCollRef.where('uid', '==', userId)
 		const querySnapshot = await query.get()
 		return querySnapshot.docs.map((doc) => ({
@@ -115,10 +115,10 @@ export const getBookmarkGroups = async (userId: string) => {
 
 export const createBookmarkGroup = async (
 	userId: string,
-	payload: BookmarkGroupDocument
+	payload: LinkGroupDocument
 ) => {
 	try {
-		const bookmarkGroup: BookmarkGroupDocument = {
+		const bookmarkGroup: LinkGroupDocument = {
 			uid: userId,
 			desc: payload.desc || 'no description.',
 			timg: payload.timg || '',
@@ -126,7 +126,7 @@ export const createBookmarkGroup = async (
 			order: payload.order || 0,
 		}
 		const createdDocRef = await firestore
-			.collection(COLLECTION.bookmarkGroups)
+			.collection(COLLECTION.linkGroup)
 			.add(bookmarkGroup)
 		const createdDocSnapshot = await createdDocRef.get()
 		const createdDocData = createdDocSnapshot.data()
@@ -139,10 +139,10 @@ export const createBookmarkGroup = async (
 
 export const deleteBookmarkGroup = async ({ groupId = '', userId = '' }) => {
 	try {
-		const groupCollectionRef = firestore.collection(COLLECTION.bookmarks)
+		const groupCollectionRef = firestore.collection(COLLECTION.linkGroup)
 		const groupDocRef = groupCollectionRef.doc(groupId)
 		const groupDocSnapshot = await groupDocRef.get()
-		const groupDocData = groupDocSnapshot.data() as BookmarkGroupDocument
+		const groupDocData = groupDocSnapshot.data() as LinkGroupDocument
 		if (groupDocData?.uid !== userId) throw new Error('user mismatch')
 		await groupDocRef.delete()
 		return true
@@ -151,3 +151,13 @@ export const deleteBookmarkGroup = async ({ groupId = '', userId = '' }) => {
 		return false
 	}
 }
+
+export const useVurlModel = () => ({
+	getBookmarks,
+	createBookmark,
+	updateBookmark,
+	deleteBookmark,
+	getBookmarkGroups,
+	createBookmarkGroup,
+	deleteBookmarkGroup,
+})
