@@ -28,7 +28,7 @@ const { firestore } = useFirebase()
 export const getBookmarks = async ({ userId = '', groupId = '' }) => {
 	try {
 		const query = await firestore
-			.collection(COLLECTION.linkGroup)
+			.collection(COLLECTION.links)
 			.where('uid', '==', userId)
 			.where('gid', '==', groupId)
 			.get()
