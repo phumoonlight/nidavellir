@@ -139,12 +139,16 @@ export const createBookmarkGroup = async (
 
 export const deleteBookmarkGroup = async ({ groupId = '', userId = '' }) => {
 	try {
-		const groupCollectionRef = firestore.collection(COLLECTION.linkGroup)
-		const groupDocRef = groupCollectionRef.doc(groupId)
-		const groupDocSnapshot = await groupDocRef.get()
-		const groupDocData = groupDocSnapshot.data() as LinkGroupDocument
-		if (groupDocData?.uid !== userId) throw new Error('user mismatch')
-		await groupDocRef.delete()
+		await firestore.runTransaction(async (tx) => {
+			const groupCollRef = firestore.collection(COLLECTION.linkGroup)
+			const deletingGroupDoc = groupCollRef.doc(groupId)
+			const linkCollRef = firestore.collection(COLLECTION.links)
+			const linkQuerySnapshot = await tx.get(
+				linkCollRef.where('gid', '==', groupId)
+			)
+			linkQuerySnapshot.docs.forEach((doc) => tx.update(doc.ref, { gid: '' }))
+			tx.delete(deletingGroupDoc)
+		})
 		return true
 	} catch (error) {
 		console.error(error)
