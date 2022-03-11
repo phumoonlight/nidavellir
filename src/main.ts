@@ -1,8 +1,8 @@
 import { app } from './app'
 import { ENV } from './env'
-import { createLogger } from './util'
+import { utils } from './utils'
 
-const log = createLogger('server')
+const log = utils.createLogger('server')
 
 app.listen(ENV.port, () => {
 	log('app listening at port', ENV.port)

@@ -1,57 +1,63 @@
 import { Router } from 'express'
-import { useAuth } from './vurl.auth'
-import { useVurlModel } from './vurl.model'
-
-const auth = useAuth()
-const model = useVurlModel()
+import { vurlAuth } from './vurl.auth'
+import { vurlModel } from './vurl.model'
 
 export const vurlController = Router()
 
-vurlController.get('/links', auth.verify, async (req, res) => {
+vurlController.get('/links', vurlAuth.handleAuth, async (req, res) => {
 	const groupId = (req.query.group as string) || ''
-	const userId = auth.getAuthorizedUserId(res)
-	const data = await model.getBookmarks({ userId, groupId })
+	const userId = vurlAuth.getUserId(res)
+	const data = await vurlModel.getBookmarks({ userId, groupId })
 	res.json({ data })
 })
 
-vurlController.post('/links', auth.verify, async (req, res) => {
-	const userId = auth.getAuthorizedUserId(res)
-	const data = await model.createBookmark(userId, req.body)
+vurlController.post('/links', vurlAuth.handleAuth, async (req, res) => {
+	const userId = vurlAuth.getUserId(res)
+	const data = await vurlModel.createBookmark(userId, req.body)
 	res.json({ data })
 })
 
-vurlController.patch('/links/:id', auth.verify, async (req, res) => {
+vurlController.patch('/links/:id', vurlAuth.handleAuth, async (req, res) => {
 	const bookmarkId = req.params.id || ''
-	const userId = auth.getAuthorizedUserId(res)
-	const isSuccess = await model.updateBookmark(userId, bookmarkId, req.body)
+	const userId = vurlAuth.getUserId(res)
+	const isSuccess = await vurlModel.updateBookmark(userId, bookmarkId, req.body)
 	const message = isSuccess ? 'success' : 'failed'
 	if (!isSuccess) res.status(500)
 	res.json({ message })
 })
 
-vurlController.delete('/links/:id', auth.verify, async (req, res) => {
-	const isSuccess = await model.deleteBookmark(req)
+vurlController.delete('/links/:id', vurlAuth.handleAuth, async (req, res) => {
+	const isSuccess = await vurlModel.deleteBookmark(req)
 	const message = isSuccess ? 'success' : 'failed'
 	if (!isSuccess) res.status(500)
 	res.json({ message })
 })
 
-vurlController.get('/groups', auth.verify, async (req, res) => {
-	const userId = auth.getAuthorizedUserId(res)
-	const data = await model.getBookmarkGroups(userId)
+vurlController.get('/groups', vurlAuth.handleAuth, async (req, res) => {
+	const userId = vurlAuth.getUserId(res)
+	const result = await vurlModel.getGroups(userId)
+	if (!result.isSuccess) res.status(500)
+	res.json(result)
+})
+
+vurlController.post('/groups', vurlAuth.handleAuth, async (req, res) => {
+	const userId = vurlAuth.getUserId(res)
+	const data = await vurlModel.createGroup(userId, req.body)
 	res.json({ data })
 })
 
-vurlController.post('/groups', auth.verify, async (req, res) => {
-	const userId = auth.getAuthorizedUserId(res)
-	const data = await model.createBookmarkGroup(userId, req.body)
-	res.json({ data })
-})
-
-vurlController.delete('/groups/:id', auth.verify, async (req, res) => {
+vurlController.patch('/groups/:id', vurlAuth.handleAuth, async (req, res) => {
 	const groupId = req.params.id || ''
-	const userId = auth.getAuthorizedUserId(res)
-	const isSuccess = await model.deleteBookmarkGroup({ userId, groupId })
+	const userId = vurlAuth.getUserId(res)
+	const result = await vurlModel.updateGroup(userId, groupId, req.body)
+	if (!result.isSuccess) res.status(500)
+	res.json(result)
+})
+
+vurlController.delete('/groups/:id', vurlAuth.handleAuth, async (req, res) => {
+	const groupId = req.params.id || ''
+	const userId = vurlAuth.getUserId(res)
+	const isSuccess = await vurlModel.deleteGroup({ userId, groupId })
 	if (!isSuccess) res.status(500)
 	res.json({
 		message: isSuccess ? 'success' : 'failed',

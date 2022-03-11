@@ -1,5 +1,6 @@
 import { Request } from 'express'
-import { useFirebase } from './vurl.firebase'
+import { vurlFirebase } from './vurl.firebase'
+import { utils } from '../../utils'
 
 export interface LinkDocument {
 	gid: string
@@ -23,7 +24,7 @@ const COLLECTION = {
 	linkGroup: 'link_groups',
 }
 
-const { firestore } = useFirebase()
+const firestore = vurlFirebase.firestore
 
 export const getBookmarks = async ({ userId = '', groupId = '' }) => {
 	try {
@@ -96,12 +97,17 @@ export const deleteBookmark = async (req: Request): Promise<boolean> => {
 	}
 }
 
-export const getBookmarkGroups = async (userId: string) => {
+export const getGroups = async (userId: string) => {
+	const result = {
+		isSuccess: true,
+		data: [] as any[],
+	}
 	try {
-		const groupCollRef = firestore.collection(COLLECTION.linkGroup)
-		const query = groupCollRef.where('uid', '==', userId)
-		const querySnapshot = await query.get()
-		return querySnapshot.docs.map((doc) => ({
+		const querySnapshot = await firestore
+			.collection(COLLECTION.linkGroup)
+			.where('uid', '==', userId)
+			.get()
+		result.data = querySnapshot.docs.map((doc) => ({
 			id: doc.id,
 			created_at: doc.createTime.toDate(),
 			updated_at: doc.updateTime.toDate(),
@@ -109,14 +115,12 @@ export const getBookmarkGroups = async (userId: string) => {
 		}))
 	} catch (error) {
 		console.error(error)
-		return []
+		result.isSuccess = false
 	}
+	return result
 }
 
-export const createBookmarkGroup = async (
-	userId: string,
-	payload: LinkGroupDocument
-) => {
+const createGroup = async (userId: string, payload: LinkGroupDocument) => {
 	try {
 		const bookmarkGroup: LinkGroupDocument = {
 			uid: userId,
@@ -137,7 +141,30 @@ export const createBookmarkGroup = async (
 	}
 }
 
-export const deleteBookmarkGroup = async ({ groupId = '', userId = '' }) => {
+export const updateGroup = async (
+	userId: string,
+	groupId: string,
+	payload: LinkGroupDocument
+) => {
+	const result = {
+		isSuccess: true,
+		message: 'success',
+	}
+	try {
+		if (!userId) throw new Error('uid required')
+		await firestore
+			.collection(COLLECTION.linkGroup)
+			.doc(groupId)
+			.update(payload)
+	} catch (error) {
+		console.error(error)
+		result.isSuccess = false
+		result.message = utils.getErrorMessage(error, 'failed to update group')
+	}
+	return result
+}
+
+export const deleteGroup = async ({ groupId = '', userId = '' }) => {
 	try {
 		await firestore.runTransaction(async (tx) => {
 			const groupCollRef = firestore.collection(COLLECTION.linkGroup)
@@ -156,12 +183,13 @@ export const deleteBookmarkGroup = async ({ groupId = '', userId = '' }) => {
 	}
 }
 
-export const useVurlModel = () => ({
+export const vurlModel = {
 	getBookmarks,
 	createBookmark,
 	updateBookmark,
 	deleteBookmark,
-	getBookmarkGroups,
-	createBookmarkGroup,
-	deleteBookmarkGroup,
-})
+	getGroups,
+	createGroup,
+	updateGroup,
+	deleteGroup,
+}
