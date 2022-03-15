@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { middlewares } from '../../middleware'
 import { vurlAuth } from './vurl.auth'
 import { vurlModel } from './vurl.model'
 
@@ -63,3 +64,24 @@ vurlController.delete('/groups/:id', vurlAuth.handleAuth, async (req, res) => {
 		message: isSuccess ? 'success' : 'failed',
 	})
 })
+
+vurlController.post(
+	'/images',
+	vurlAuth.handleAuth,
+	middlewares.handleIncomingFile,
+	middlewares.validateIncomingFile,
+	async (req, res) => {
+		const payload = {
+			message: 'success',
+			code: 'success',
+			uploadedUrl: '',
+		}
+		const file = req.file as Express.Multer.File
+		const uploadedUrl = await vurlModel.uploadImage(file)
+		payload.message = uploadedUrl ? 'success' : 'failed'
+		payload.code = uploadedUrl ? 'success' : 'failed'
+		payload.uploadedUrl = uploadedUrl
+		res.status(payload.uploadedUrl ? 200 : 500)
+		res.json(payload)
+	}
+)

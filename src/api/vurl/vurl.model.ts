@@ -1,6 +1,7 @@
 import { Request } from 'express'
 import { vurlFirebase } from './vurl.firebase'
 import { utils } from '../../utils'
+import { initFirebaseStorageUploader } from '../../firebase'
 
 export interface LinkDocument {
 	gid: string
@@ -183,6 +184,12 @@ export const deleteGroup = async ({ groupId = '', userId = '' }) => {
 	}
 }
 
+const uploadImage = initFirebaseStorageUploader({
+	bucket: vurlFirebase.bucket,
+	folder: 'uploads',
+	fileNamePrefix: 'u',
+})
+
 export const vurlModel = {
 	getBookmarks,
 	createBookmark,
@@ -192,4 +199,5 @@ export const vurlModel = {
 	createGroup,
 	updateGroup,
 	deleteGroup,
+	uploadImage
 }
