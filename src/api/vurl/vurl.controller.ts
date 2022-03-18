@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { ResponsePayload } from '../../const'
-import { middlewares } from '../../middleware'
 import { vurlAuth } from './vurl.auth'
 import { vurlModel } from './vurl.model'
+import { middlewares } from '../../middleware'
+import { utils } from '../../utils'
 
 export const vurlController = Router()
 
@@ -14,7 +14,7 @@ vurlController.get('/links', vurlAuth.handleAuth, async (req, res) => {
 })
 
 vurlController.post('/links', vurlAuth.handleAuth, async (req, res) => {
-	const payload = new ResponsePayload()
+	const payload = utils.initResPayload()
 	const userId = vurlAuth.getUserId(res)
 	const linkDocId = await vurlModel.createBookmark(userId, req.body)
 	payload.data = linkDocId
@@ -51,16 +51,30 @@ vurlController.get('/groups', vurlAuth.handleAuth, async (req, res) => {
 })
 
 vurlController.post('/groups', vurlAuth.handleAuth, async (req, res) => {
+	const payload = utils.initResPayload()
 	const userId = vurlAuth.getUserId(res)
-	const data = await vurlModel.createGroup(userId, req.body)
-	res.json({ data })
+	const createdGroupId = await vurlModel.createGroup(userId, req.body)
+	payload.data = createdGroupId
+	if (!createdGroupId) {
+		payload.code = 'failed'
+		payload.message = 'failed to create group'
+		payload.success = false
+		res.status(500)
+	}
+	res.json(payload)
 })
 
 vurlController.patch('/groups/:id', vurlAuth.handleAuth, async (req, res) => {
+	const payload = utils.initResPayload()
 	const groupId = req.params.id || ''
 	const userId = vurlAuth.getUserId(res)
 	const result = await vurlModel.updateGroup(userId, groupId, req.body)
-	if (!result.isSuccess) res.status(500)
+	payload.success = result.isSuccess
+	if (!result.isSuccess) {
+		payload.code = 'failed'
+		payload.message = result.message
+		res.status(500)
+	}
 	res.json(result)
 })
 

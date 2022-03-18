@@ -123,19 +123,17 @@ export const getGroups = async (userId: string) => {
 
 const createGroup = async (userId: string, payload: LinkGroupDocument) => {
 	try {
-		const bookmarkGroup: LinkGroupDocument = {
+		const group: LinkGroupDocument = {
 			uid: userId,
 			desc: payload.desc || 'no description.',
 			timg: payload.timg || '',
 			title: payload.title || 'untitled',
 			order: payload.order || 0,
 		}
-		const createdDocRef = await firestore
+		const createdGroup = await firestore
 			.collection(COLLECTION.linkGroup)
-			.add(bookmarkGroup)
-		const createdDocSnapshot = await createdDocRef.get()
-		const createdDocData = createdDocSnapshot.data()
-		return createdDocData
+			.add(group)
+		return createdGroup.id
 	} catch (error) {
 		console.error(error)
 		return null
@@ -199,5 +197,5 @@ export const vurlModel = {
 	createGroup,
 	updateGroup,
 	deleteGroup,
-	uploadImage
+	uploadImage,
 }
