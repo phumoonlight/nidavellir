@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import { apiRouter } from './router'
+import pkg from '../package.json'
 
 export const app = express()
 
@@ -14,5 +15,9 @@ app.get('/favicon.ico', (req, res) => {
 })
 
 app.get('/', (req, res) => {
-	res.send('nidavellir online')
+	res.json({
+		message: 'nidavellir online',
+		version: pkg.version,
+		repository: pkg.repository.url
+	})
 })

@@ -1,6 +1,10 @@
 {
   "name": "nidavellir",
-  "version": "1.0.0",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phumoonlight/nidavellir"
+  },
   "scripts": {
     "dev": "nodemon --exec npx ts-node src/main.ts",
     "build": "rimraf dist && tsc",
