@@ -8,7 +8,15 @@ const getErrorMessage = (error: any, fallbackMessage = 'error'): string => {
 	return fallbackMessage
 }
 
+const initResPayload = () => ({
+	code: 'success',
+	message: 'success',
+	success: true,
+	data: null as any,
+})
+
 export const utils = {
 	getErrorMessage,
 	createLogger,
+	initResPayload,
 }

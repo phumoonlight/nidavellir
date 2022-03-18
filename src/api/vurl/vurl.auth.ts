@@ -1,6 +1,6 @@
 import { RequestHandler, Response } from 'express'
 import { vurlFirebase } from './vurl.firebase'
-import { ResponsePayload } from '../../response'
+import { utils } from '../../utils'
 
 const decodeIdToken = async (token: string) => {
 	try {
@@ -17,19 +17,23 @@ const getUserId = (res: Response): string => {
 }
 
 const handleAuth: RequestHandler = async (req, res, next) => {
-	const response = new ResponsePayload()
-	const incomingToken = req.headers.authorization
-	if (!incomingToken) {
+	const payload = utils.initResPayload()
+	const authToken = req.headers.authorization
+	if (!authToken) {
+		payload.code = 'auth_failed_no_token'
+		payload.message = 'auth failed: missing auth header'
+		payload.success = false
+		res.json(payload)
 		res.status(401)
-		response.message = 'missing authorization header'
-		res.json(response)
 		return
 	}
-	const decodedIdToken = await decodeIdToken(incomingToken)
+	const decodedIdToken = await decodeIdToken(authToken)
 	if (!decodedIdToken) {
+		payload.code = 'auth_failed_invalid_token'
+		payload.message = 'auth failed: invalid token'
+		payload.success = false
 		res.status(401)
-		response.message = 'authorization failed: invalid token'
-		res.json(response)
+		res.json(payload)
 		return
 	}
 	res.locals.decodedIdToken = decodedIdToken

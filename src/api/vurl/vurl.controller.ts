@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { ResponsePayload } from '../../const'
 import { middlewares } from '../../middleware'
 import { vurlAuth } from './vurl.auth'
 import { vurlModel } from './vurl.model'
@@ -13,9 +14,17 @@ vurlController.get('/links', vurlAuth.handleAuth, async (req, res) => {
 })
 
 vurlController.post('/links', vurlAuth.handleAuth, async (req, res) => {
+	const payload = new ResponsePayload()
 	const userId = vurlAuth.getUserId(res)
-	const data = await vurlModel.createBookmark(userId, req.body)
-	res.json({ data })
+	const linkDocId = await vurlModel.createBookmark(userId, req.body)
+	payload.data = linkDocId
+	if (!linkDocId) {
+		payload.code = 'failed'
+		payload.message = 'failed to create link'
+		payload.success = false
+		res.status(500)
+	}
+	res.json(payload)
 })
 
 vurlController.patch('/links/:id', vurlAuth.handleAuth, async (req, res) => {

@@ -61,7 +61,7 @@ export const createBookmark = async (userId: string, payload: LinkDocument) => {
 		const createdDocRef = await firestore
 			.collection(COLLECTION.links)
 			.add(bookmark)
-		return await createdDocRef.get()
+		return createdDocRef.id
 	} catch (error) {
 		console.error(error)
 		return null
