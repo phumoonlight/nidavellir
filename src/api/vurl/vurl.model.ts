@@ -1,4 +1,5 @@
 import { Request } from 'express'
+import { v4 as uuidv4 } from 'uuid'
 import { vurlFirebase } from './vurl.firebase'
 import { utils } from '../../utils'
 import { initFirebaseStorageUploader } from '../../firebase'
@@ -58,10 +59,13 @@ export const createBookmark = async (userId: string, payload: LinkDocument) => {
 			title: payload.title || 'untitled',
 			order: payload.order || 0,
 		}
-		const createdDocRef = await firestore
+		const generatedId = uuidv4()
+		const formattedId = `${userId}-${generatedId}`
+		await firestore
 			.collection(COLLECTION.links)
-			.add(bookmark)
-		return createdDocRef.id
+			.doc(formattedId)
+			.set(bookmark)
+		return formattedId
 	} catch (error) {
 		console.error(error)
 		return null
