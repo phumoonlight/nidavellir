@@ -61,10 +61,7 @@ export const createBookmark = async (userId: string, payload: LinkDocument) => {
 		}
 		const generatedId = uuidv4()
 		const formattedId = `${userId.slice(0, 5)}-${generatedId}`
-		await firestore
-			.collection(COLLECTION.links)
-			.doc(formattedId)
-			.set(bookmark)
+		await firestore.collection(COLLECTION.links).doc(formattedId).set(bookmark)
 		return formattedId
 	} catch (error) {
 		console.error(error)
@@ -133,10 +130,10 @@ const createGroup = async (userId: string, payload: LinkGroupDocument) => {
 			title: payload.title || 'untitled',
 			order: payload.order || 0,
 		}
-		const createdGroup = await firestore
-			.collection(COLLECTION.linkGroup)
-			.add(group)
-		return createdGroup.id
+		const generatedId = uuidv4()
+		const formattedId = `${userId.slice(0, 5)}-${generatedId}`
+		await firestore.collection(COLLECTION.linkGroup).doc(formattedId).set(group)
+		return formattedId
 	} catch (error) {
 		console.error(error)
 		return null
