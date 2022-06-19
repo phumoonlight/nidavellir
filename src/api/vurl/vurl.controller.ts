@@ -37,7 +37,7 @@ vurlController.patch('/links/:id', vurlAuth.handleAuth, async (req, res) => {
 })
 
 vurlController.delete('/links/:id', vurlAuth.handleAuth, async (req, res) => {
-	const isSuccess = await vurlModel.deleteBookmark(req)
+	const isSuccess = await vurlModel.deleteBookmark(req.params.id)
 	const message = isSuccess ? 'success' : 'failed'
 	if (!isSuccess) res.status(500)
 	res.json({ message })

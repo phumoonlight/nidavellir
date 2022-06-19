@@ -60,7 +60,7 @@ export const createBookmark = async (userId: string, payload: LinkDocument) => {
 			order: payload.order || 0,
 		}
 		const generatedId = uuidv4()
-		const formattedId = `${userId}-${generatedId}`
+		const formattedId = `${userId.slice(0, 5)}-${generatedId}`
 		await firestore
 			.collection(COLLECTION.links)
 			.doc(formattedId)
@@ -89,11 +89,10 @@ export const updateBookmark = async (
 	}
 }
 
-export const deleteBookmark = async (req: Request): Promise<boolean> => {
+export const deleteBookmark = async (id: string): Promise<boolean> => {
 	try {
-		const bookmarkId = req.params.id || ''
 		const bookmarkCollRef = firestore.collection(COLLECTION.links)
-		const bookmarkDocRef = bookmarkCollRef.doc(bookmarkId)
+		const bookmarkDocRef = bookmarkCollRef.doc(id)
 		await bookmarkDocRef.delete()
 		return true
 	} catch (error) {
